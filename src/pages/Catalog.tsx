@@ -59,7 +59,7 @@ const Catalog = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold pb-3 mb-4 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
               Lost & Found Catalog
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -76,7 +76,7 @@ const Catalog = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   <AnimatePresence mode="popLayout">
                     {items.map((item) => (
                       <motion.div
@@ -87,55 +87,68 @@ const Catalog = () => {
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="group"
                       >
-                        <Card className="overflow-hidden backdrop-blur-sm bg-white/40 border-white/30 shadow-xl hover:shadow-2xl transition-all duration-300">
+                        <Card className="overflow-hidden backdrop-blur-sm bg-white/40 border-white/30 shadow-md hover:shadow-xl transition-all duration-300">
                           <div className="relative aspect-video">
-                            {item.images[0] && (
+                            {item.images[0] ? (
                               <img 
                                 src={`${API_URL}/uploads/items/${item.images[0].imagePath}`}
                                 alt={item.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                                <svg 
+                                  className="w-12 h-12 text-gray-400"
+                                  xmlns="http://www.w3.org/2000/svg" 
+                                  fill="none" 
+                                  viewBox="0 0 24 24" 
+                                  stroke="currentColor"
+                                >
+                                  <path 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    strokeWidth={1.5} 
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                                  />
+                                </svg>
+                              </div>
                             )}
                             <Badge 
-                              className={`absolute top-3 right-3 ${
+                              className={`absolute top-2 right-2 ${
                                 item.item_type === 0
                                   ? 'bg-red-500 hover:bg-red-600' 
                                   : 'bg-green-500 hover:bg-green-600'
-                              } text-white`}
+                              } text-white text-xs px-2 py-1`}
                             >
                               {item.item_type === 0 ? 'Lost' : 'Found'}
                             </Badge>
                           </div>
-                          <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xl text-gray-800">{item.title}</h3>
-                              <Badge variant="outline">{item.category}</Badge>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-semibold text-base text-gray-800 truncate">{item.title}</h3>
+                              <Badge variant="outline" className="text-xs">{item.category}</Badge>
                             </div>
-                            <p className="text-gray-600 mb-4 line-clamp-2">{item.descs}</p>
-                            <div className="space-y-2">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <User className="h-4 w-4 mr-2 text-purple-500" />
-                                {item.addedBy?.name}
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-1">{item.descs}</p>
+                            <div className="space-y-1 text-xs">
+                              <div className="flex items-center text-gray-500">
+                                <User className="h-3 w-3 mr-1 text-purple-500" />
+                                <span className="truncate">{item.addedBy?.name}</span>
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <MapPin className="h-4 w-4 mr-2 text-teal-500" />
-                                {item.location}
+                              <div className="flex items-center text-gray-500">
+                                <MapPin className="h-3 w-3 mr-1 text-teal-500" />
+                                <span className="truncate">{item.location}</span>
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                                {new Date(item.date).toLocaleDateString()}
-                              </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Clock className="h-4 w-4 mr-2 text-orange-500" />
-                                {item.time}
+                              <div className="flex items-center text-gray-500">
+                                <Calendar className="h-3 w-3 mr-1 text-blue-500" />
+                                <span>{new Date(item.date).toLocaleDateString()}</span>
                               </div>
                             </div>
                             <Button 
-                              className="w-full mt-4 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-full"
+                              className="w-full mt-3 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-full text-xs py-1"
                               onClick={() => handleContactClick(item.id)}
                             >
-                              Contact Owner
-                              <ArrowRight className="ml-2 h-4 w-4" />
+                              Contact
+                              <ArrowRight className="ml-1 h-3 w-3" />
                             </Button>
                           </CardContent>
                         </Card>
