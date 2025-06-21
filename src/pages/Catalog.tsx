@@ -4,9 +4,9 @@ import { ItemService, Item } from '@/services/item.service';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, ArrowRight, User, Clock } from 'lucide-react';
+import { MapPin, Calendar, ArrowRight, User, Clock, SlidersHorizontal, X } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
-import   { API_URL }  from '@/../config/env.config';
+import { API_URL } from '@/../config/env.config';
 
 import Navigation from '@/components/Navigation';
 import FilterSidebar from '@/components/FilterSidebar';
@@ -16,6 +16,7 @@ const Catalog = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
   const itemService = new ItemService();
   const { toast } = useToast();
 
@@ -52,7 +53,7 @@ const Catalog = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cream-50">
       <Navigation />
       <div className="pt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,16 +68,70 @@ const Catalog = () => {
             </p>
           </motion.div>
 
-          <div className="flex gap-8">
-            <FilterSidebar onFilterChange={handleFilterChange} />
+          {/* Mobile Filter Toggle Button */}
+          <div className="md:hidden flex justify-center mb-6">
+            <Button 
+              onClick={() => setFilterOpen(true)}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full"
+            >
+              <SlidersHorizontal className="mr-2 h-4 w-4" />
+              Show Filters
+            </Button>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Mobile Filter Off-Canvas */}
+            <AnimatePresence>
+              {filterOpen && (
+                <>
+                  {/* Overlay */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setFilterOpen(false)}
+                  />
+                  
+                  {/* Filter Sidebar */}
+                  <motion.div 
+                    initial={{ x: '-100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '-100%' }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className="fixed inset-y-0 left-0 max-w-[85%] w-80 z-50 md:hidden"
+                  >
+                    <div className="relative h-full bg-gradient-to-br from-white to-purple-50 p-4 overflow-y-auto">
+                      <Button 
+                        onClick={() => setFilterOpen(false)} 
+                        variant="ghost" 
+                        size="icon"
+                        className="absolute right-2 top-2 rounded-full bg-white/80 hover:bg-white"
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
+                      <div className="mt-10">
+                        <FilterSidebar onFilterChange={handleFilterChange} />
+                      </div>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
             
+            {/* Desktop Filter Sidebar - hidden on mobile */}
+            <div className="hidden md:block">
+              <FilterSidebar onFilterChange={handleFilterChange} />
+            </div>
+            
+            {/* Items Grid */}
             <div className="flex-1">
               {loading ? (
                 <div className="flex justify-center items-center min-h-[400px]">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <AnimatePresence mode="popLayout">
                     {items.map((item) => (
                       <motion.div
@@ -155,6 +210,29 @@ const Catalog = () => {
                       </motion.div>
                     ))}
                   </AnimatePresence>
+                </div>
+              )}
+              
+              {/* No items message */}
+              {!loading && items.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 px-4">
+                  <div className="bg-white/70 backdrop-blur-md rounded-2xl p-8 text-center max-w-md">
+                    <div className="text-purple-500 mb-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">No items found</h3>
+                    <p className="text-gray-600 mb-4">
+                      No items match your current filter criteria. Try adjusting your filters or check back later.
+                    </p>
+                    <Button 
+                      onClick={() => handleFilterChange({})}
+                      className="bg-purple-500 hover:bg-purple-600 text-white rounded-full"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

@@ -98,15 +98,10 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
   }, [date, selectedVenue, selectedItemType, selectedColors, searchKeyword, itemStatus]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-80 h-fit backdrop-blur-md bg-white/60 rounded-3xl border border-white/30 shadow-xl p-6 sticky top-24"
-    >
+    <div className="h-fit backdrop-blur-md bg-white/60 rounded-3xl border border-white/30 md:shadow-xl p-4 md:p-6 w-full md:sticky md:top-24">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-teal-500 bg-clip-text text-transparent">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <h3 className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-teal-500 bg-clip-text text-transparent">
           Smart Filters
         </h3>
         {(activeFilters.length > 0 || itemStatus) && (
@@ -122,48 +117,48 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
       </div>
 
       {/* Quick Filter Buttons */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4 md:mb-6">
         <Button
           variant={itemStatus === 'lost' ? 'default' : 'outline'}
           className={cn(
-            "w-full rounded-full",
+            "w-full rounded-full text-xs md:text-sm py-1 md:py-2",
             itemStatus === 'lost' 
               ? "bg-red-500 hover:bg-red-600 text-white"
               : "hover:bg-red-50 text-red-500 border-red-200"
           )}
           onClick={() => setItemStatus(prev => prev === 'lost' ? null : 'lost')}
         >
-          <AlertCircle className="mr-2 h-4 w-4" />
+          <AlertCircle className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
           <span className="truncate">Lost</span>
         </Button>
         <Button
           variant={itemStatus === 'found' ? 'default' : 'outline'}
           className={cn(
-            "w-full rounded-full",
+            "w-full rounded-full text-xs md:text-sm py-1 md:py-2",
             itemStatus === 'found'
               ? "bg-green-500 hover:bg-green-600 text-white"
               : "hover:bg-green-50 text-green-500 border-green-200"
           )}
           onClick={() => setItemStatus(prev => prev === 'found' ? null : 'found')}
         >
-          <BookCheck className="mr-2 h-4 w-4" />
+          <BookCheck className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
           <span className="truncate">Found</span>
         </Button>
       </div>
 
       {/* Active Filters */}
       {activeFilters.length > 0 && (
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2">
+        <div className="mb-4 md:mb-6">
+          <div className="flex flex-wrap gap-1 md:gap-2">
             {activeFilters.map((filter) => (
               <Badge
                 key={filter}
                 variant="secondary"
-                className="flex items-center gap-1 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 hover:from-purple-200 hover:to-blue-200 border-purple-200 rounded-full"
+                className="flex items-center gap-1 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 hover:from-purple-200 hover:to-blue-200 border-purple-200 rounded-full text-xs"
               >
                 {filter}
                 <X
-                  className="h-3 w-3 cursor-pointer"
+                  className="h-2 w-2 md:h-3 md:w-3 cursor-pointer"
                   onClick={() => removeFilter(filter)}
                 />
               </Badge>
@@ -172,11 +167,11 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Date Picker */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Calendar className="h-5 w-5 text-purple-500" />
+        <div className="space-y-2 md:space-y-3">
+          <label className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-semibold text-gray-700">
+            <Calendar className="h-4 w-4 md:h-5 md:w-5 text-purple-500" />
             Date Range
           </label>
           <Popover>
@@ -184,11 +179,11 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal backdrop-blur-sm bg-white/70 border-white/40 rounded-2xl hover:bg-white/80",
+                  "w-full justify-start text-left text-xs md:text-sm font-normal backdrop-blur-sm bg-white/70 border-white/40 rounded-xl md:rounded-2xl hover:bg-white/80 py-1 md:py-2",
                   !date && "text-muted-foreground"
                 )}
               >
-                <Calendar className="mr-2 h-4 w-4" />
+                <Calendar className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
                 {date ? format(date, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
@@ -205,13 +200,13 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         </div>
 
         {/* Venue/Location */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <MapPin className="h-5 w-5 text-blue-500" />
+        <div className="space-y-2 md:space-y-3">
+          <label className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-semibold text-gray-700">
+            <MapPin className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
             Campus Location
           </label>
           <Select value={selectedVenue} onValueChange={setSelectedVenue}>
-            <SelectTrigger className="backdrop-blur-sm bg-white/70 border-white/40 rounded-2xl hover:bg-white/80">
+            <SelectTrigger className="backdrop-blur-sm bg-white/70 border-white/40 rounded-xl md:rounded-2xl hover:bg-white/80 h-8 md:h-10 text-xs md:text-sm">
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
@@ -223,13 +218,13 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         </div>
 
         {/* Item Type */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Tag className="h-5 w-5 text-teal-500" />
+        <div className="space-y-2 md:space-y-3">
+          <label className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-semibold text-gray-700">
+            <Tag className="h-4 w-4 md:h-5 md:w-5 text-teal-500" />
             Item Category
           </label>
           <Select value={selectedItemType} onValueChange={setSelectedItemType}>
-            <SelectTrigger className="backdrop-blur-sm bg-white/70 border-white/40 rounded-2xl hover:bg-white/80">
+            <SelectTrigger className="backdrop-blur-sm bg-white/70 border-white/40 rounded-xl md:rounded-2xl hover:bg-white/80 h-8 md:h-10 text-xs md:text-sm">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -241,9 +236,9 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         </div>
 
         {/* Color Filter */}
-        <div className="space-y-3">
-          <label className="text-sm font-semibold text-gray-700">Item Colors</label>
-          <div className="grid grid-cols-5 gap-3">
+        <div className="space-y-2 md:space-y-3">
+          <label className="text-xs md:text-sm font-semibold text-gray-700">Item Colors</label>
+          <div className="grid grid-cols-5 gap-2 md:gap-3">
             {colors.map((color) => (
               <motion.button
                 key={color.name}
@@ -251,7 +246,7 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "w-10 h-10 rounded-full border-2 transition-all duration-200 shadow-lg hover:shadow-xl",
+                  "w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all duration-200",
                   selectedColors.includes(color.name)
                     ? "border-purple-500 ring-2 ring-purple-200"
                     : "border-gray-300 hover:border-purple-300"
@@ -264,20 +259,20 @@ const FilterSidebar = ({ onFilterChange }: FilterSidebarProps) => {
         </div>
 
         {/* Keyword Search */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Search className="h-5 w-5 text-orange-500" />
+        <div className="space-y-2 md:space-y-3">
+          <label className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-semibold text-gray-700">
+            <Search className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
             Search Keywords
           </label>
           <Input
             placeholder="Describe your item..."
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            className="backdrop-blur-sm bg-white/70 border-white/40 rounded-2xl hover:bg-white/80 focus:bg-white/90"
+            className="backdrop-blur-sm bg-white/70 border-white/40 rounded-xl md:rounded-2xl hover:bg-white/80 focus:bg-white/90 h-8 md:h-10 text-xs md:text-sm px-3"
           />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
