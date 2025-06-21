@@ -60,9 +60,9 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-white/95 backdrop-blur-lg border-white/20">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-lg border-white/20">
         {loading ? (
-          <div className="flex justify-center items-center h-96">
+          <div className="flex justify-center items-center h-60">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
           </div>
         ) : (

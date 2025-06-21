@@ -100,7 +100,7 @@ export const SignUpDialog = ({ open, onOpenChange }: SignUpDialogProps) => {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-center bg-gradient-to-r from-teal-600 via-purple-600 to-teal-600 bg-clip-text text-transparent pb-2">
             Join UniFind
