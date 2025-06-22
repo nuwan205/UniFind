@@ -77,7 +77,8 @@ export const SignUpDialog = ({ open, onOpenChange }: SignUpDialogProps) => {
           name: '',
           age: 0,
           phone: '',
-          faculty: ''
+          faculty: '',
+          status:1
         });
         setConfirmPassword('');
       }
