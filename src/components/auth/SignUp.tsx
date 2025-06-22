@@ -21,6 +21,7 @@ interface SignUpForm {
   age: number;
   phone: string;
   faculty: string;
+  status: number;
 }
 
 interface SignUpDialogProps {
@@ -36,7 +37,8 @@ export const SignUpDialog = ({ open, onOpenChange }: SignUpDialogProps) => {
     name: '',
     age: 0,
     phone: '',
-    faculty: ''
+    faculty: '',
+    status:1
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
