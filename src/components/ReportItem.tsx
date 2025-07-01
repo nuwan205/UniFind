@@ -115,6 +115,12 @@ export const ReportItem = ({ open, onOpenChange }: ReportItemProps) => {
       // Close dialog and reset form
       setIsOpen(false);
       
+      // Force cleanup pointer events
+      setTimeout(() => {
+        document.body.style.pointerEvents = '';
+        document.documentElement.style.pointerEvents = '';
+      }, 100);
+      
       // Reset form data
       setFormData({
         type: '',
@@ -169,7 +175,7 @@ export const ReportItem = ({ open, onOpenChange }: ReportItemProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-2 pr-2 custom-scrollbar">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

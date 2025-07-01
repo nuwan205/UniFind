@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Search, Users, LogIn, LogOut, Menu, X } from 'lucide-react';
+import { Home, Search, Users, LogIn, LogOut, Menu, X, User, Settings, Shield } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SignInDialog } from './auth/SignIn';
 import { ReportItem } from './ReportItem';
 
@@ -12,18 +14,33 @@ const Navigation = () => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Check auth status on mount and token changes
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('userData');
+    
     setIsSignedIn(!!token);
+    
+    if (userData) {
+      try {
+        console.log(JSON.parse(userData))
+        setUserInfo(JSON.parse(userData));
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        setUserInfo(null);
+      }
+    }
   }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userData');
     setIsSignedIn(false);
-    window.location.href = '/';
+    setUserInfo(null);
+    navigate('/');
   };
 
   const getActiveTab = () => {
@@ -42,6 +59,15 @@ const Navigation = () => {
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -98,19 +124,43 @@ const Navigation = () => {
                       Report Item
                     </Button>
                   </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Button 
-                      variant="outline" 
-                      className="border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white px-6 py-3 rounded-full transition-all duration-300"
-                      onClick={handleSignOut}
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </motion.div>
+                  
+                  {/* Profile Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={userInfo?.avatar} alt={userInfo?.name} />
+                          <AvatarFallback className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                            {userInfo?.name ? getUserInitials(userInfo.name) : 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
+                      <div className="flex items-center justify-start gap-2 p-2">
+                        <div className="flex flex-col space-y-1 leading-none">
+                          {userInfo?.name && (
+                            <p className="font-medium">{userInfo.name}</p>
+                          )}
+                          {userInfo?.email && (
+                            <p className="w-40 truncate text-sm text-muted-foreground">
+                              {userInfo.email}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Manage Items</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sign out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               ) : (
                 <motion.div
@@ -208,6 +258,22 @@ const Navigation = () => {
                 <div className="border-t border-gray-200 pt-6 space-y-4">
                   {isSignedIn ? (
                     <>
+                      {/* User Info */}
+                      {userInfo && (
+                        <div className="flex items-center space-x-3 px-4 py-3 bg-white/50 rounded-xl">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={userInfo?.avatar} alt={userInfo?.name} />
+                            <AvatarFallback className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+                              {userInfo?.name ? getUserInitials(userInfo.name) : 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-gray-800">{userInfo.name}</p>
+                            <p className="text-sm text-gray-600 truncate">{userInfo.email}</p>
+                          </div>
+                        </div>
+                      )}
+                      
                       <Button 
                         className="w-full bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
                         onClick={() => {
@@ -217,6 +283,19 @@ const Navigation = () => {
                       >
                         Report Lost Item
                       </Button>
+                      
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white py-3 rounded-xl transition-all duration-300"
+                        onClick={() => {
+                          navigate('/admin');
+                          closeMobileMenu();
+                        }}
+                      >
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </Button>
+                      
                       <Button 
                         variant="outline" 
                         className="w-full border-2 border-red-500 text-red-600 hover:bg-red-500 hover:text-white py-3 rounded-xl transition-all duration-300"
