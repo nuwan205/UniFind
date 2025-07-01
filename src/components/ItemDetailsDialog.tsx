@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ItemService } from '@/services/item.service';
 import { MapPin, Calendar, Phone, User, Clock, Building, Mail } from 'lucide-react';
-import  useEmblaCarousel  from 'embla-carousel-react';
+import useEmblaCarousel from 'embla-carousel-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from "react";
-import   { API_URL }  from '@/../config/env.config';
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { API_URL } from '@/../config/env.config';
 
 interface ItemDetailsDialogProps {
   itemId: number;
@@ -20,29 +20,46 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
   const [loading, setLoading] = useState(true);
   const [emblaRef] = useEmblaCarousel();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const itemService = new ItemService();
+  
+  // Create ItemService instance only once using useMemo
+  const itemService = useMemo(() => new ItemService(), []);
   const { toast } = useToast();
+  
+  // Use ref to track if we've already fetched for this itemId
+  const fetchedItemId = useRef<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
   }, []);
 
-  useEffect(() => {
-    const fetchItemDetails = async () => {
-      if (open && itemId) {
-        setLoading(true);
-        try {
-          const response = await itemService.getItemById(itemId);
-          setItemDetails(response.data.data);
-        } catch (error) {
-          console.error('Failed to fetch item details:', error);
-        } finally {
-          setLoading(false);
-        }
+  // Simplified fetch function without dependencies that change
+  const fetchItemDetails = useCallback(async (id: number) => {
+    setLoading(true);
+    try {
+      const response = await itemService.getItemById(id);
+      console.log('Full response:', response); // Debug log
+      
+      if (response.status && response.data) {
+        setItemDetails(response.data);
+        console.log('Item details set:', response.data); // Debug log
+      } else {
+        throw new Error(response.message || 'Failed to fetch item details');
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch item details:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load item details. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [itemService, toast]);
 
+  useEffect(() => {
+    // Check authentication
     if (open && !isAuthenticated) {
       toast({
         variant: "destructive",
@@ -53,8 +70,27 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
       return;
     }
 
-    fetchItemDetails();
-  }, [itemId, open, isAuthenticated]);
+    // Fetch item details only if conditions are met and we haven't already fetched this item
+    if (open && isAuthenticated && itemId && fetchedItemId.current !== itemId) {
+      fetchedItemId.current = itemId;
+      fetchItemDetails(itemId);
+    }
+
+    // Reset when dialog closes
+    if (!open) {
+      setItemDetails(null);
+      setLoading(true);
+      fetchedItemId.current = null;
+    }
+  }, [open, isAuthenticated, itemId, fetchItemDetails, onOpenChange, toast]);
+
+  // Retry function for manual retry
+  const handleRetry = useCallback(() => {
+    if (itemId) {
+      fetchedItemId.current = null; // Reset the ref to allow refetch
+      fetchItemDetails(itemId);
+    }
+  }, [itemId, fetchItemDetails]);
 
   if (!open) return null;
 
@@ -65,20 +101,30 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
           <div className="flex justify-center items-center h-60">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
           </div>
-        ) : (
+        ) : itemDetails ? (
           <div className="space-y-6">
             {/* Image Carousel */}
             <div className="overflow-hidden rounded-xl" ref={emblaRef}>
               <div className="flex">
-                {itemDetails?.images.map((image: any, index: number) => (
-                  <div key={image.id} className="relative flex-[0_0_100%]">
-                    <img
-                      src={`${API_URL}/uploads/items/${image.imagePath}`}
-                      alt={`${itemDetails.title} - ${index + 1}`}
-                      className="w-full aspect-video object-cover"
-                    />
+                {itemDetails?.images && itemDetails.images.length > 0 ? (
+                  itemDetails.images.map((image: any, index: number) => (
+                    <div key={image.id} className="relative flex-[0_0_100%]">
+                      <img
+                        src={`${API_URL}/uploads/items/${image.imagePath}`}
+                        alt={`${itemDetails.title} - ${index + 1}`}
+                        className="w-full aspect-video object-cover"
+                        onError={(e) => {
+                          console.error('Image failed to load:', image.imagePath);
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex-[0_0_100%] bg-gray-200 aspect-video flex items-center justify-center">
+                    <span className="text-gray-500">No images available</span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -114,11 +160,11 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                  {new Date(itemDetails?.date).toLocaleDateString()}
+                  {itemDetails?.date ? new Date(itemDetails.date).toLocaleDateString() : 'N/A'}
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Clock className="h-4 w-4 mr-2 text-orange-500" />
-                  {itemDetails?.time}
+                  {itemDetails?.time || 'N/A'}
                 </div>
               </div>
 
@@ -126,35 +172,51 @@ export function ItemDetailsDialog({ itemId, open, onOpenChange }: ItemDetailsDia
               <div className="space-y-3">
                 <div className="flex items-center text-sm text-gray-500">
                   <User className="h-4 w-4 mr-2 text-purple-500" />
-                  {itemDetails?.addedBy?.name}
+                  {itemDetails?.addedBy?.name || 'N/A'}
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Building className="h-4 w-4 mr-2 text-indigo-500" />
-                  {itemDetails?.addedBy?.faculty}
+                  {itemDetails?.addedBy?.faculty || 'N/A'}
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <Phone className="h-4 w-4 mr-2 text-green-500" />
-                  {itemDetails?.conatct_info}
+                  {itemDetails?.conatct_info || 'N/A'}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 pt-4">
+            {itemDetails?.conatct_info && (
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-full"
+                  onClick={() => window.open(`tel:${itemDetails.conatct_info}`, '_self')}
+                >
+                  Call Now
+                  <Phone className="ml-2 h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-2 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white rounded-full"
+                  onClick={() => window.open(`sms:${itemDetails.conatct_info}`, '_self')}
+                >
+                  Send SMS
+                  <Mail className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex justify-center items-center h-60">
+            <div className="text-center">
+              <p className="text-gray-600">Failed to load item details</p>
               <Button 
-                className="flex-1 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-full"
-                onClick={() => window.location.href = `tel:${itemDetails?.conatct_info}`}
+                onClick={handleRetry}
+                className="mt-4"
+                variant="outline"
+                disabled={loading}
               >
-                Call Now
-                <Phone className="ml-2 h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1 border-2 border-purple-500 text-purple-600 hover:bg-purple-500 hover:text-white rounded-full"
-                onClick={() => window.location.href = `sms:${itemDetails?.conatct_info}`}
-              >
-                Send SMS
-                <Mail className="ml-2 h-4 w-4" />
+                {loading ? 'Loading...' : 'Retry'}
               </Button>
             </div>
           </div>
